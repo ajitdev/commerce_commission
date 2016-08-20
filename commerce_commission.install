@@ -1,0 +1,97 @@
+<?php
+/**
+ * @file
+ * commerce_commission.install
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function commerce_commission_schema() {
+  $schema['commerce_commission'] = array(
+    'description' => 'Contains individual commissions earned by the users per product.',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'The primary identifier for a commission.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'uid of the user who gets this commission.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'product_id' => array(
+        'description' => 'Product id for which the commission is being given.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'order_id' => array(
+        'description' => 'Order id of the order in which the referred product was sold.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'commission_amount' => array(
+        'description' => 'Amount received as commission.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the commission was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('cid'),
+  );
+  $schema['commerce_commission_repay'] = array(
+    'description' => 'Contains data of repayment of the commission.',
+    'fields' => array(
+      'repay_id' => array(
+        'description' => 'The primary identifier for a commission repayment.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'User uid of the user who gets this commission.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'repay_amount' => array(
+        'description' => 'Amount paid to the user.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'balance_amount' => array(
+        'description' => 'Commission amount to paid to the user.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the repayment was done.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('repay_id'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_commission_uninstall() {
+  variable_del('commerce_commission_percent');
+}
