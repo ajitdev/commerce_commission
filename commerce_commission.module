@@ -28,7 +28,7 @@ function commerce_commission_menu() {
   $items['p/%/%'] = array(
     'page callback' => 'commerce_commission_set_referral_product',
     'page arguments' => array(1, 2),
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
   );
   return $items;
 }
@@ -38,9 +38,8 @@ function commerce_commission_menu() {
  */
 function commerce_commission_permission() {
   return array(
-    'configure commerce commission' =>  array(
-      'title' => t('Configure Commerce Commission'),
-      'description' => t('Configure the settings provided by commerce commission module.'),
+    'configure commerce commission' => array(
+      'title' => t('Configure commerce commission'),
     ),
   );
 }
@@ -48,18 +47,13 @@ function commerce_commission_permission() {
 /**
  * Callback function for referral URL.
  */
-function commerce_commission_set_referral_product($username, $product_id) {
+function commerce_commission_set_referral_product($username, $node_id) {
   // Initialize the commission settings for the session.
   $_SESSION['commerce_referral'] = array();
 
-  $query = db_select('commerce_product', 'cp')
-            ->fields('cp', array('product_id'))
-            ->condition('product_id', $product_id)
-            ->execute();
-  $product_result = $query->fetchObject();
-
-  // If the product id in the referred URL is invalid.
-  if (!$product_result) {
+  // Check if the node is present.
+  $node = node_load($node_id);
+  if (!$node) {
     drupal_goto('<front>');
   }
 
@@ -76,27 +70,27 @@ function commerce_commission_set_referral_product($username, $product_id) {
   }
   // If the user with this username exists.
   else {
-    $_SESSION['commerce_referral'] = array(
-      'uid' => $user_result->uid,
-      'pid' => $product_result->product_id,
-    );
-    // Find the node id of the product, referrenced by the field_product field.
-    // @todo Make this configurable.
-    $query = db_select('field_data_field_product', 'fp')
-              ->fields('fp', array('entity_id'))
-              ->condition('entity_type', 'node')
-              ->condition('field_product_product_id', $product_result->product_id)
-              ->execute();
-    $product_node = $query->fetchObject();
-    // If the product is associated with a node with a product referrence field,
-    // redirect the user to the product page with the product id in the URL.
-    if ($product_node) {
-      $node_url = url();
-      drupal_goto('node/' . $product_node->entity_id, array('query' => array('id' => $product_result->product_id)));
-      return;
+    $products = array();
+    // @todo make the field machine name configurable.
+    // Using `field_product` by default.
+    if (isset($node->field_product) && !empty($node->field_product)) {
+      foreach ($node->field_product[LANGUAGE_NONE] as $value) {
+        $products[] = $value['product_id'];
+      }
     }
+    if (!empty($products)) {
+      $_SESSION['commerce_referral'] = array(
+        'uid' => $user_result->uid,
+        'nid' => $node->nid,
+        'pid' => $products,
+      );
+    }
+
+    // @todo increment hit counter in database for analytics.
+    drupal_goto('node/' . $node->nid);
+    return;
   }
-  // Redirect to homepage.
+  // Redirect to homepage if any condition is not met.
   drupal_goto('<front>');
 }
 
@@ -104,26 +98,33 @@ function commerce_commission_set_referral_product($username, $product_id) {
  * Implements hook_commerce_payment_order_paid_in_full().
  */
 function commerce_commission_commerce_payment_order_paid_in_full($order, $transaction) {
+  // Check if referral data is present in the session.
   if (isset($_SESSION['commerce_referral']) && !empty($_SESSION['commerce_referral'])) {
-    $uid = $_SESSION['uid'];
-    $product_id = $_SESSION['pid'];
+    // Getting values of the variables.
+    $uid = $_SESSION['commerce_referral']['uid'];
+    $node_id = $_SESSION['commerce_referral']['nid'];
     $order_id = $order->order_id;
     $entity = entity_metadata_wrapper('commerce_order', $order);
     $line_items = $entity->commerce_line_items->value();
 
     foreach ($line_items as $line_item) {
       if (isset($line_item->data) && !empty($line_item->data)) {
+        // Get data of entity (node) from the context if it is set.
         if (isset($line_item->data['context'])) {
-          if (isset($line_item->data['context']['products_ids']) && is_array($line_item->data['context']['products_ids']) && !empty($line_item->data['context']['products_ids'])) {
-            if ($line_item->data['context']['products_ids'] == $product_id) {
+          if (isset($line_item->data['context']['entity']) && is_array($line_item->data['context']['entity']) && !empty($line_item->data['context']['entity'])) {
+            if ($line_item->data['context']['entity']['entity_id'] == $node_id) {
+              // Getting the product cost without any tax or discount.
               $product_cost = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
-              commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost);
+              // @todo : Instead of passing the node id, pass and store the product id.
+              commerce_commission_grant_permission($uid, $node_id, $order_id, $product_cost);
             }
           }
         }
       }
     }
   }
+  // Reset the referral data after purchase.
+  $_SESSION['commerce_referral'] = array();
 }
 
 /**
@@ -134,13 +135,28 @@ function commerce_commission_grant_permission($uid, $product_id, $order_id, $pro
   if ($commission_percent) {
     $commission_amount = ($product_cost * $commission_percent) / 100;
     db_insert('commerce_commission')
-    ->fields(array(
-      'uid' => $uid,
-      'product_id' => $product_id,
-      'order_id' => $order_id,
-      'commission_amount' => $commission_amount,
-      'created' => REQUEST_TIME,
-    ))
-    ->execute();
+      ->fields(array(
+        'uid' => $uid,
+        'product_id' => $product_id,
+        'order_id' => $order_id,
+        'commission_amount' => $commission_amount,
+        'created' => REQUEST_TIME,
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function commerce_commission_preprocess_node(&$vars) {
+  if (isset($_SESSION['commerce_referral']) && !empty($_SESSION['commerce_referral'])) {
+    if (isset($vars['field_product']) && !empty($vars['field_product'])) {
+      if (count($vars['field_product']) > 1) {
+        foreach ($vars['field_product'] as $product) {
+
+        }
+      }
+    }
   }
 }
