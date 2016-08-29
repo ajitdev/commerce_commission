@@ -139,7 +139,7 @@ function commerce_commission_grant_permission($uid, $product_id, $order_id, $pro
         'uid' => $uid,
         'product_id' => $product_id,
         'order_id' => $order_id,
-        'commission_amount' => $commission_amount,
+        'commission_amount' => floor($commission_amount),
         'created' => REQUEST_TIME,
       ))
       ->execute();
@@ -154,7 +154,6 @@ function commerce_commission_preprocess_node(&$vars) {
     if (isset($vars['field_product']) && !empty($vars['field_product'])) {
       if (count($vars['field_product']) > 1) {
         foreach ($vars['field_product'] as $product) {
-
         }
       }
     }
