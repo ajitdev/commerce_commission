@@ -159,3 +159,13 @@ function commerce_commission_preprocess_node(&$vars) {
     }
   }
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function commerce_commission_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'commerce_commission'),
+  );
+}

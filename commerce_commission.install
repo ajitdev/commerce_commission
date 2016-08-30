@@ -41,6 +41,12 @@ function commerce_commission_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'currency_code' => array(
+        'description' => 'The currency code for the amount.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
       'created' => array(
         'description' => 'The Unix timestamp when the commission was created.',
         'type' => 'int',
@@ -76,6 +82,12 @@ function commerce_commission_schema() {
         'type' => 'float',
         'not null' => TRUE,
         'default' => 0,
+      ),
+      'currency_code' => array(
+        'description' => 'The currency code for the amount.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
       ),
       'created' => array(
         'description' => 'The Unix timestamp when the repayment was done.',
