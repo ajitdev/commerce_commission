@@ -150,12 +150,18 @@ function commerce_commission_grant_permission($uid, $product_id, $order_id, $pro
  * Implements hook_preprocess_node().
  */
 function commerce_commission_preprocess_node(&$vars) {
-  if (isset($_SESSION['commerce_referral']) && !empty($_SESSION['commerce_referral'])) {
-    if (isset($vars['field_product']) && !empty($vars['field_product'])) {
-      if (count($vars['field_product']) > 1) {
-        foreach ($vars['field_product'] as $product) {
-        }
-      }
+  global $user;
+  global $base_url;
+  // Only authenticated user should be able to share the link.
+  if ($user->uid) {
+    // Add JS for copying the URL.
+    drupal_add_js(drupal_get_path('module', 'commerce_commission') . '/commerce_commission.js');
+    // Make sure there is at least one product present for this product display.
+    if (isset($vars['field_product']) && !empty($vars['field_product']) && (count($vars['field_product']) > 0)) {
+      $link = $base_url . '/p/' . $user->name . '/' . $vars['nid'];
+      // Add the copy product link to the $vars array.
+      // This can be accessible in the node template.
+      $vars['commerce_commission_referral'] = "<input type='textbox' id='commerce_product_link' class='commerce-product-unique-link' value =" . $link . " > <button class ='commerce-referral-button' onclick = 'copyToClipboard()'>copy</button>";
     }
   }
 }
