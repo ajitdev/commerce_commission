@@ -49,7 +49,7 @@ function commerce_commission_permission() {
  */
 function commerce_commission_set_referral_product($username, $node_id) {
   // Initialize the commission settings for the session.
-  $_SESSION['commerce_referral'] = array();
+  $_SESSION['commerce_commission'] = array();
 
   // Check if the node is present.
   $node = node_load($node_id);
@@ -79,7 +79,7 @@ function commerce_commission_set_referral_product($username, $node_id) {
       }
     }
     if (!empty($products)) {
-      $_SESSION['commerce_referral'] = array(
+      $_SESSION['commerce_commission'] = array(
         'uid' => $user_result->uid,
         'nid' => $node->nid,
         'pid' => $products,
@@ -99,38 +99,37 @@ function commerce_commission_set_referral_product($username, $node_id) {
  */
 function commerce_commission_commerce_payment_order_paid_in_full($order, $transaction) {
   // Check if referral data is present in the session.
-  if (isset($_SESSION['commerce_referral']) && !empty($_SESSION['commerce_referral'])) {
+  if (isset($_SESSION['commerce_commission']) && !empty($_SESSION['commerce_commission'])) {
     // Getting values of the variables.
-    $uid = $_SESSION['commerce_referral']['uid'];
-    $node_id = $_SESSION['commerce_referral']['nid'];
+    $uid = $_SESSION['commerce_commission']['uid'];
     $order_id = $order->order_id;
     $entity = entity_metadata_wrapper('commerce_order', $order);
     $line_items = $entity->commerce_line_items->value();
 
     foreach ($line_items as $line_item) {
       if (isset($line_item->data) && !empty($line_item->data)) {
-        // Get data of entity (node) from the context if it is set.
-        if (isset($line_item->data['context'])) {
-          if (isset($line_item->data['context']['entity']) && is_array($line_item->data['context']['entity']) && !empty($line_item->data['context']['entity'])) {
-            if ($line_item->data['context']['entity']['entity_id'] == $node_id) {
-              // Getting the product cost without any tax or discount.
-              $product_cost = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
-              // @todo : Instead of passing the node id, pass and store the product id.
-              commerce_commission_grant_permission($uid, $node_id, $order_id, $product_cost);
-            }
+        // The line items can either be a 'product' or 'discounted product'.
+        $product_types = array('product', 'product_discount');
+        if (in_array($line_item->type, $product_types)) {
+          $product_cost = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
+          $product_currency_code = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['currency_code'];
+          $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+          // If the product being purchased is referred by anyone else.
+          if (in_array($product_id, $_SESSION['commerce_commission']['pid'])) {
+            commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost, $product_currency_code);
           }
         }
       }
     }
   }
-  // Reset the referral data after purchase.
-  $_SESSION['commerce_referral'] = array();
+  // Reset the commission data in session after purchase.
+  $_SESSION['commerce_commission'] = array();
 }
 
 /**
  * Provide commission to the stylist.
  */
-function commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost) {
+function commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost, $product_currency_code) {
   $commission_percent = variable_get('commerce_commission_percent', 0);
   if ($commission_percent) {
     $commission_amount = ($product_cost * $commission_percent) / 100;
@@ -140,6 +139,7 @@ function commerce_commission_grant_permission($uid, $product_id, $order_id, $pro
         'product_id' => $product_id,
         'order_id' => $order_id,
         'commission_amount' => floor($commission_amount),
+        'currency_code' => $product_currency_code,
         'created' => REQUEST_TIME,
       ))
       ->execute();
