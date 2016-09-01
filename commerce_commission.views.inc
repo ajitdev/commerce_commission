@@ -133,8 +133,8 @@ function commerce_commission_views_data() {
   );
 
   $data['commerce_commission']['created'] = array(
-    'title' => t('Product id'),
-    'help' => t('Id of product node sold'),
+    'title' => t('Date'),
+    'help' => t('Time at which the commission was given'),
     'field' => array(
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
