@@ -1,0 +1,66 @@
+.product-variation-top-commission-link{
+  position: relative;
+}
+  .product-variation-top-commission-link .product-variation-top-commission-link-wrapper{
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 15px ;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-transition: all 0.2s cubic-bezier(0,0,0,0.4);
+    -moz-transition: all 0.2s cubic-bezier(0,0,0,0.4);
+    -ms-transition: all 0.2s cubic-bezier(0,0,0,0.4);
+    -o-transition: all 0.2s cubic-bezier(0,0,0,0.4);
+    transition: all 0.2s cubic-bezier(0,0,0,0.4);
+  }
+  .product-variation-top-commission-link .product-variation-top-commission-link-wrapper.opened{
+    opacity: 1;
+    pointer-events: auto;
+  }
+    .product-variation-top-commission-link .product-variation-top-commission-link-content{
+      border: 1px solid #efefef;
+      display: table;
+      table-layout: fixed;
+      line-height: 0;
+    }
+      .product-variation-top-commission-link .product-variation-top-commission-link-content input{
+        font-size: 10px;
+        line-height: 18px;
+        padding: 2px 5px;
+        min-width: 120px;
+      }
+      .product-variation-top-commission-link .product-variation-top-commission-link-content button{
+        background: white;
+        background-color : #fcfcfc;
+        border: 0;
+        border-left: 1px solid #efefef;
+        cursor: pointer;
+        height: 22px;
+        min-width: 40px;
+      }
+        .product-variation-top-commission-link .product-variation-top-commission-link-content button:hover{
+          background-color: #dcdcdc;
+        }
+      .product-variation-top-commission-link .product-variation-top-commission-link-content .table-els {
+        display: table-cell;
+        border: 0;
+        line-height: 1;
+      }
+    .product-variation-top-commission-link .product-variation-top-commission-link-wrapper .copy-sts-msg{
+      font-size: 9px;
+      position: absolute;
+      bottom: 3px;
+      left: 17px;
+      opacity: 0;
+      -webkit-transition: all 0.1s cubic-bezier(0,0,0,0.4);
+      -moz-transition: all 0.1s cubic-bezier(0,0,0,0.4);
+      -ms-transition: all 0.1s cubic-bezier(0,0,0,0.4);
+      -o-transition: all 0.1s cubic-bezier(0,0,0,0.4);
+      transition: all 0.1s cubic-bezier(0,0,0,0.4);
+    }
+      .product-variation-top-commission-link .product-variation-top-commission-link-wrapper .copy-sts-msg.visible{
+        opacity: 1;
+      }

@@ -157,12 +157,25 @@ function commerce_commission_preprocess_node(&$vars) {
   if ($user->uid) {
     // Add JS for copying the URL.
     drupal_add_js(drupal_get_path('module', 'commerce_commission') . '/commerce_commission.js');
+    // Add CSS for copying the URL.
+    drupal_add_css(drupal_get_path('module', 'commerce_commission') . '/commerce_commission.css');
     // Make sure there is at least one product present for this product display.
     if (isset($vars['field_product']) && !empty($vars['field_product']) && (count($vars['field_product']) > 0)) {
       $link = $base_url . '/p/' . $user->name . '/' . $vars['nid'];
       // Add the copy product link to the $vars array.
       // This can be accessible in the node template.
-      $vars['commerce_commission_referral'] = "<input type='textbox' id='commerce_product_link' class='commerce-product-unique-link' value =" . $link . " > <button class ='commerce-referral-button' onclick = 'copyToClipboard()' title='Copy your unique sharing url'>copy</button>";
+      $vars['commerce_commission_referral'] = "
+        <div class='product-variation-top-commission-link-wrapper'>
+          <div class='product-variation-top-commission-link-content'>
+            <input type='textbox' id='commerce_product_link' class='commerce-product-unique-link table-els' value =" . $link . " />
+            <div class='table-els' >
+              <button class='product-variation-top-commission-link-btn' type='button' onclick = 'copyToClipboard()'>copy</button>
+            </div>
+          </div>
+          <div class='copy-sts-msg enabled-copy'> URL is copied to clipboard! </div>
+          <div class='copy-sts-msg disabled-copy'> Hit Ctrl+C to copy! </div>
+        </div>
+        <button class ='commerce-referral-button' onclick='toggleClipboard()' title='Copy your unique sharing url'>copy</button>";
     }
   }
 }
