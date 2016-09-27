@@ -1,5 +1,6 @@
 name = Commerce Commission
 description = Enables users to get commission for the products shared.
 core = 7.x
+dependencies[] = commerce
 
 files[] = commerce_commission.views.inc
