@@ -17,6 +17,15 @@ function commerce_commission_views_data() {
     'title' => t('Commerce Commission'),
   );
 
+  $data['commerce_commission']['cid'] = array(
+    'title' => t('cid'),
+    'help' => t('Commission ID'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+  );
+
   $data['commerce_commission']['uid'] = array(
     'title' => t('User'),
     'help' => t('Id of user getting commission'),
@@ -61,11 +70,36 @@ function commerce_commission_views_data() {
       'handler' => 'commerce_product_handler_argument_product_id',
     ),
     'relationship' => array(
-      'base' => 'node',
-      'base field' => 'nid',
+      'base' => 'commerce_product',
+      'base field' => 'product_id',
       'handler' => 'views_handler_relationship',
       'label' => t('Product'),
       'title' => t('Product'),
+    ),
+  );
+
+  $data['commerce_commission']['node_id'] = array(
+    'title' => t('Node'),
+    'help' => t('Product display for the product'),
+    'field' => array(
+      'handler' => 'views_handler_field_node',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_node_nid',
+    ),
+    'relationship' => array(
+      'base' => 'node',
+      'base field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Product node'),
+      'title' => t('Product node'),
     ),
   );
 
