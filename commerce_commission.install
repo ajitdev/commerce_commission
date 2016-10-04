@@ -29,6 +29,12 @@ function commerce_commission_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'node_id' => array(
+        'description' => 'Node id for which the commission is being given.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'order_id' => array(
         'description' => 'Order id of the order in which the referred product was sold.',
         'type' => 'int',

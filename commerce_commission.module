@@ -116,7 +116,7 @@ function commerce_commission_commerce_payment_order_paid_in_full($order, $transa
             $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
             // If the product being purchased is referred by anyone else.
             if (in_array($product_id, $_SESSION['commerce_commission'][$nid]['pid'])) {
-              commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost, $product_currency_code);
+              commerce_commission_grant_permission($uid, $product_id, $nid, $order_id, $product_cost, $product_currency_code);
             }
           }
         }
@@ -130,7 +130,7 @@ function commerce_commission_commerce_payment_order_paid_in_full($order, $transa
 /**
  * Provide commission to the stylist.
  */
-function commerce_commission_grant_permission($uid, $product_id, $order_id, $product_cost, $product_currency_code) {
+function commerce_commission_grant_permission($uid, $product_id, $nid, $order_id, $product_cost, $product_currency_code) {
   $commission_percent = variable_get('commerce_commission_percent', 0);
   if ($commission_percent) {
     $commission_amount = ($product_cost * $commission_percent) / 100;
@@ -138,6 +138,7 @@ function commerce_commission_grant_permission($uid, $product_id, $order_id, $pro
       ->fields(array(
         'uid' => $uid,
         'product_id' => $product_id,
+        'node_id' => $nid,
         'order_id' => $order_id,
         'commission_amount' => floor($commission_amount),
         'currency_code' => $product_currency_code,
