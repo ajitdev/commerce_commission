@@ -70,7 +70,7 @@ function commerce_commission_set_referral_product($username, $node_id) {
   }
 
   // If the user is using own URL, redirect to the node page.
-  elseif ($user_result == $user->uid) {
+  elseif ($user_result->uid == $user->uid) {
     drupal_goto('node/' . $node_id);
   }
 
