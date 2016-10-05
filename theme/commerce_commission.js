@@ -8,7 +8,9 @@
  */
 document.addEventListener('click', function(event){
   if (!checkIfParent(event.target) && event.target.className.indexOf('commerce-referral-button') === -1) {
-    document.querySelector('.product-variation-top-commission-link-wrapper').classList.remove('opened');
+    if (document.querySelector('.product-variation-top-commission-link-wrapper')) {
+      document.querySelector('.product-variation-top-commission-link-wrapper').classList.remove('opened');
+    }
   }
 });
 
