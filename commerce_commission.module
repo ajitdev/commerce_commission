@@ -50,7 +50,7 @@ function commerce_commission_permission() {
 function commerce_commission_set_referral_product($username, $node_id) {
   // Initialize the commission settings for the current product.
   $_SESSION['commerce_commission'][$node_id] = array();
-
+  global $user;
   // Check if the node is present.
   $node = node_load($node_id);
   if (!$node) {
@@ -64,10 +64,16 @@ function commerce_commission_set_referral_product($username, $node_id) {
             ->execute();
   $user_result = $query->fetchObject();
 
-  // If the user with this username does not exist, redirect to the login page.
+  // If the user with this username does not exist, redirect to the node page.
   if (!$user_result) {
-    drupal_goto('user');
+    drupal_goto('node/' . $node_id);
   }
+
+  // If the user is using own URL, redirect to the node page.
+  elseif ($user_result == $user->uid) {
+    drupal_goto('node/' . $node_id);
+  }
+
   // If the user with this username exists.
   else {
     $products = array();
