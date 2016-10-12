@@ -134,10 +134,12 @@ function commerce_commission_commerce_payment_order_paid_in_full($order, $transa
 }
 
 /**
- * Provide commission to the stylist.
+ * Provide commission to the user.
  */
 function commerce_commission_grant_permission($uid, $product_id, $nid, $order_id, $product_cost, $product_currency_code) {
   $commission_percent = variable_get('commerce_commission_percent', 0);
+  // Allow modules to alter the commission percentage.
+  drupal_alter('commerce_commission_percentage', $commission_percent);
   if ($commission_percent) {
     $commission_amount = ($product_cost * $commission_percent) / 100;
     db_insert('commerce_commission')
